@@ -68,6 +68,10 @@ const scoreDisplay = document.querySelector('#score-display');
 const progressText = document.querySelector('#progress-text');
 const gameMessage = document.querySelector('#game-message');
 const playAgain = document.querySelector('#play-again');
+const replyCard = document.querySelector('#reply-card');
+document.querySelectorAll('.reply-option[data-message]').forEach((link) => {
+  link.href = `https://wa.me/254710837083?text=${encodeURIComponent(link.dataset.message)}`;
+});
 const targetScore = 8;
 let score = 0;
 let hopTimer;
@@ -80,8 +84,20 @@ function moveHeart() {
   const padding = 12;
   const maxX = Math.max(padding, bounds.width - heartSize - padding);
   const maxY = Math.max(padding, bounds.height - heartSize - padding);
-  const x = padding + Math.random() * (maxX - padding);
-  const y = padding + Math.random() * (maxY - padding);
+  let x = padding + Math.random() * (maxX - padding);
+  let y = padding + Math.random() * (maxY - padding);
+  const minTravel = Math.min(bounds.width, bounds.height) * 0.36;
+  const oldX = Number.parseFloat(runnerHeart.style.left) || 0;
+  const oldY = Number.parseFloat(runnerHeart.style.top) || 0;
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const nextX = padding + Math.random() * (maxX - padding);
+    const nextY = padding + Math.random() * (maxY - padding);
+    if (Math.hypot(nextX - oldX, nextY - oldY) >= minTravel) {
+      x = nextX;
+      y = nextY;
+      break;
+    }
+  }
   runnerHeart.style.left = `${x}px`;
   runnerHeart.style.top = `${y}px`;
 }
@@ -117,7 +133,9 @@ runnerHeart.addEventListener('click', () => {
     window.clearInterval(hopTimer);
     runnerHeart.classList.add('is-hidden');
     gameMessage.classList.remove('is-hidden');
+    replyCard.classList.remove('is-hidden');
     progressText.textContent = 'All caught! You’re the champion, Big Girl!';
+    window.setTimeout(() => replyCard.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
     return;
   }
   moveHeart();
@@ -129,6 +147,7 @@ playAgain.addEventListener('click', () => {
   scoreDisplay.textContent = `💗 0 / ${targetScore}`;
   progressText.textContent = 'Ready when you are!';
   gameMessage.classList.add('is-hidden');
+  replyCard.classList.add('is-hidden');
   runnerHeart.classList.remove('is-hidden');
   moveHeart();
   startHopping();
